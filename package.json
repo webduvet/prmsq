@@ -1,0 +1,24 @@
+{
+  "name": "promise-q",
+  "version": "0.0.1",
+  "description": "queue for controlled promise resolution",
+  "main": "dist/pq.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webduvet/promise-q.git"
+  },
+  "keywords": [
+    "promise",
+    "rate",
+    "queue"
+  ],
+  "author": "Andrej Bartko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/webduvet/promise-q/issues"
+  },
+  "homepage": "https://github.com/webduvet/promise-q#readme"
+}
