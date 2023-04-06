@@ -3,7 +3,7 @@ import {
 } from 'deferable';
 
 //this is one burst
-export class RateLimiter {
+export class PromiseQ {
 
 	_pendingLimit = undefined
 
@@ -18,12 +18,16 @@ export class RateLimiter {
 	_q = []
 
 	_subscribers = {
+		// not used now
 		data: [],
-		done: [],
+		empty: [],
 		timeout: [],
 		interrupt: [],
+		// once the there no more promises to schedule
+		// it does not mean that all promises are settled
+		done: [],
 		// qOpen signals to trigger another burst
-		// it is emitted either when q is not full anymore
+		// it is _emitted either when q is not full anymore
 		// or at the end of interval
 		_qOpen: [], //internal
 		_qClosed: [], // internal
@@ -38,22 +42,13 @@ export class RateLimiter {
 		this._q = [];
 
 		this._deferred = fns.map(fn => Defer(fn));
-		// this can be wrapped by Promise.allSettled
 		this._promises = this._deferred.map(d => d.promise);
-
-
-		// TODO this causes the problem
-		// if we want to add more promises to the queue
-		Promise.allSettled(this._promises)
-			.then((values) => {
-				this.emit('done', [values]);
-			})
 
 		this.on('_qOpen', function() {
 			if (this._index < this._deferred.length) {
-				this.scheduleNext();
-			//} else {
-				//this.emit('done', [this._promises])
+				this._scheduleNext();
+			} else {
+				this._emit('done')
 			}
 		}.bind(this))
 	}
@@ -62,12 +57,12 @@ export class RateLimiter {
 		if (!this._pendingLimit) {
 			return false;
 		}
-		console.log(`Q size: ${this._pending.length}`)
-		console.log(`Q full: ${this._pendingLimit === this._pending.length}`)
+		//console.log(`Q size: ${this._pending.length}`)
+		//console.log(`Q full: ${this._pendingLimit === this._pending.length}`)
 		return this._pending.length === this._pendingLimit;
 	}
 
-	emit(ev, args) {
+	_emit(ev, args) {
 		this._subscribers[ev].forEach(handler => {
 			if (!args) {
 				handler();
@@ -112,20 +107,20 @@ export class RateLimiter {
 			return;
 		}
 		this._q.push(opIndex);
-		console.log(this._q)
-		this.processQ();
+		//console.log(this._q)
+		this._processQ();
 	}
 
 	_addPending(opIndex) {
 		this._pending.push(opIndex);
 		if (this._pendingLimit === this._pending.length) {
-			this.emit('_qClosed')
+			this._emit('_qClosed')
 		}
 	}
 
 	_removePending(opIndex) {
 		const pos = this._pending.indexOf(opIndex);
-		console.log(`removing opIndex ${opIndex} at at ${pos}`)
+		//console.log(`removing opIndex ${opIndex} at at ${pos}`)
 		const pendingMax = this._pendingLimit === this._pending.length;
 		if (pos > -1) {
 			this._pending = [
@@ -136,10 +131,10 @@ export class RateLimiter {
 			// open queue again if removing from full buffer
 			// last request might have made buffer full
 			// but the check is for it is deffered by interval _int
-			// if it is in deffered state than we must not emit the event now, but
+			// if it is in deffered state than we must not _emit the event now, but
 			// wait for the defferement to finish.
 			if (pendingMax && !this._isDeffered) {
-				this.emit('_qOpen')
+				this._emit('_qOpen')
 			}
 		} else {
 			throw Error("operation Index not in pending Q")
@@ -147,7 +142,7 @@ export class RateLimiter {
 
 	}
 
-	scheduleNext() {
+	_scheduleNext() {
 		//this._addToQueue(this._index);
 		if (this._q.length > 0) {
 			throw Error('Q is expected to be empty')
@@ -160,29 +155,29 @@ export class RateLimiter {
 
 		this._q.push(this._index);
 
-		console.log(this._q)
+		//console.log(this._q)
 
 		this._index += 1;
 
-		this.processQ();
+		this._processQ();
 	}
 
-	processQ(opIndex) {
+	_processQ(opIndex) {
 		// if nothing to process then schedule
 		const operationIndex = this._q.pop();
 		if (typeof operationIndex === 'undefined') {
-			this.scheduleNext();
+			this._scheduleNext();
 			return;
 		}
 
-		console.log('operation Index:', operationIndex)
+		//console.log('operation Index:', operationIndex)
 
 		// open drawer with _deferred refered by index
-		const c = this._deferred[operationIndex];
+		const d = this._deferred[operationIndex];
 
 		this._addPending(operationIndex);
 
-		c.executor()
+		d.trigger()
 			.finally(() => {
 				this._removePending(operationIndex);
 			})
@@ -196,13 +191,23 @@ export class RateLimiter {
 		this._isDeffered = true;
 		setTimeout(() => {
 			if (!this._isQueueFull()) {
-				this.emit('_qOpen')
+				this._emit('_qOpen')
 			}
 			this._isDeffered = false;
 		}, this._int);
 	}
 
 	start() {
-		this.emit('_qOpen')
+		this._emit('_qOpen')
+	}
+
+	/**
+	 * @desc
+	 * returns the array of promises in the same order as the fns
+	 *
+	 * @return {Array<Promise>}
+	 */
+	get promises() {
+		return this._promises;
 	}
 }

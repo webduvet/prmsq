@@ -1,24 +1,44 @@
 {
-  "name": "promise-q",
-  "version": "0.0.1",
-  "description": "queue for controlled promise resolution",
-  "main": "dist/pq.js",
-  "scripts": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/webduvet/promise-q.git"
-  },
-  "keywords": [
-    "promise",
-    "rate",
-    "queue"
-  ],
-  "author": "Andrej Bartko",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/webduvet/promise-q/issues"
-  },
-  "homepage": "https://github.com/webduvet/promise-q#readme"
+	"name": "promise-q",
+	"version": "0.0.1",
+	"description": "queue for controlled promise resolution",
+	"type": "module",
+	"main": "dist/pq.js",
+	"types": "types/module.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"test": "npm run build && mocha --require @babel/register ./src/test/**/*.test.js",
+		"build": "rm -rf ./dist && babel src/code -d dist --source-maps && cp -r src/types ./dist"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/webduvet/promise-q.git"
+	},
+	"keywords": [
+		"promise",
+		"rate",
+		"queue"
+	],
+	"author": "Andrej Bartko",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/webduvet/promise-q/issues"
+	},
+	"homepage": "https://github.com/webduvet/promise-q#readme",
+	"devDependencies": {
+		"@babel/cli": "^7.20.7",
+		"@babel/core": "^7.21.0",
+		"@babel/plugin-transform-runtime": "^7.21.0",
+		"@babel/preset-env": "^7.20.2",
+		"@babel/register": "^7.21.0",
+		"chai": "^4.3.7",
+		"mocha": "^10.2.0",
+		"chai-spies": "^1.0.0",
+		"sinon": "^15.0.1"
+	},
+	"dependencies": {
+		"deferable": "^0.0.7"
+	}
 }
