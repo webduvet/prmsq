@@ -1,5 +1,5 @@
 {
-	"name": "promise-q",
+	"name": "prmsq",
 	"version": "0.0.1",
 	"description": "queue for controlled promise resolution",
 	"type": "module",
