@@ -23,6 +23,7 @@ export class PromiseQ {
 		empty: [],
 		timeout: [],
 		interrupt: [],
+		start: [],
 		// once the there no more promises to schedule
 		// it does not mean that all promises are settled
 		done: [],
@@ -78,23 +79,23 @@ export class PromiseQ {
 		}
 		this._subscribers[event].push(cb);
 
-		const opIndex = this._subscribers.length - 1;
+		const opIndex = this._subscribers[event].length - 1;
 
-		// return unsubscribe
-		return function() {
-			this._subscribers = [
-				...this._subscribers.slice(0,opIndex),
-				...this._subscribers.slice(opIndex + 1),
-			]
-		}
+		// return convenient unsubscribe function
+		return () => {
+			this.off(event, cb);
+		};
 	}
 
 	off(event, cb) {
-		const opIndex = this._subscribers.indexOf(cb);
+		if (Object.keys(this._subscribers).indexOf(event) < 0) {
+			throw Error(`event "${event}" is not supported.`)
+		}
+		const opIndex = this._subscribers[event].indexOf(cb);
 		if (opIndex > -1) {
-			this._subscribers = [
-				...this._subscribers.slice(0,opIndex),
-				...this._subscribers.slice(opIndex + 1),
+			this._subscribers[event] = [
+				...this._subscribers[event].slice(0,opIndex),
+				...this._subscribers[event].slice(opIndex + 1),
 			]
 		}
 	}
@@ -182,7 +183,7 @@ export class PromiseQ {
 				this._removePending(operationIndex);
 			})
 
-		// we have a limit how ofter the request can go
+		// we have a limit how often the request can go
 		// so deffering the next one
 		this._deffer()
 	}
@@ -198,7 +199,10 @@ export class PromiseQ {
 	}
 
 	start() {
-		this._emit('_qOpen')
+		// emiting _qOpen event for internal use
+		this._emit('_qOpen');
+		// emiting start event for eventual subscribers
+		this._emit('start');
 	}
 
 	/**
