@@ -119,6 +119,29 @@ describe('PromiseQ: ', function() {
 				done();
 			}).catch(done)
 		});
+		it("shouldn't throttle the queue if no pendingLimit is set", function(done) {
+			this.timeout(10000);
+			const fakeConfig = {
+				randomReject: true,
+				successRate: 0.9,
+				fold: 1000,
+				randomDuration: false,
+				duration: 10,
+			}
+			const test = new Array(...new Array(5))
+				.map(() => fakeCall(fakeConfig));
+			const pq = new PromiseQ(test, 500)
+			let spiedOnClosed = spy();
+			pq.on('_qClosed', spiedOnClosed)
+			let spiedOnOpen = spy();
+			pq.on('_qOpen', spiedOnOpen)
+			pq.start()
+			Promise.allSettled(pq.promises).then(() => {
+				assert.isTrue(spiedOnOpen.called)
+				assert.isFalse(spiedOnClosed.called)
+				done();
+			}).catch(done)
+		});
 	})
 
 })

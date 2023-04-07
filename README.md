@@ -42,9 +42,11 @@ v8.16.0
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-clone the repository and from inside run the usual
+clone the repository
+```bash
+git clone git@github.com:webduvet/promise-q.git
+```
+and from inside run the usual.
 ```sh
 $ npm run test
 $ npm run build
@@ -54,7 +56,7 @@ $ npm run build
 
 **BEFORE YOU INSTALL:** please read the [prerequisites](#prerequisites)
 
-Start with cloning this repo on your local machine:
+It is standard npm package:
 
 ```sh
 $ cd npm-project
@@ -63,74 +65,21 @@ $ npm install promise-q
 
 ## Usage
 
-Factory Flavor: **Defer**
-
-This is a simple factory method returning a holder object for promise and the 
-
 Inside your project:
-
 ```js
 import {
-    Defer
-} from 'deferable'
+    PromiseQ
+} from 'promise-q'
 
-const { result, ...lever } = Defer(function() {
-    // returning the actual operation which returns promise e.g.
-    return http.call(url)
-    }, "result")
+const promiseArray = new Array(...new Array(50)).map(fnReturningPromise);
 
+// 0.1s between calls and max 5 pending promises
+const pq = new PromiseQ(promiseArray, 100, 5)
 
-// passing a promise to where is it expected
-consumerService(result)
-...
-// at some point in the code this triggers the promise fulfillment
-lever.trigger()
+pq.start();
 ```
 
-It returns an object with three keys: `promise, trigger, called`;
 
-    - first contains the actual promise which can be consumed.
-    - trigger is a function which triggers the promise fulfillment.
-    - called is a flag
-
-
-Class flavor: **Deferred, DeferredTrigger**
-
-In essence the class implementation of the above.
-Objects `Deferred` and `DeferredTrigger` is typeof **Promise** should your project require this feature.
-
-```js
-import {
-    DefferedTrigger
-} from 'deferable';
-
-const deferred = new Deferred(() => http.call(url))
-
-// passing a promise to where is it expected
-consumerService(deferred.promise)
-
-// at some point in the code this triggers the promise fulfillment
-deferred.trigger()
-```
-
-**Deferred** class is just a plain implementation of the deferred pattern exposing `resolve` and `reject` resolvers.
-
-
-```js
-import {
-    Deffered
-} from 'deferable';
-
-const deferred = new Deffered()
-
-// passing a promise to where is it expected
-consumerService(deferred)
-
-// at some point in the code this triggers the promise fulfillment
-thanableService().then((data) => {
-    deferred.resolve(data)
-});
-```
 
 ### Running the tests
 
