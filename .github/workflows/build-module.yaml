@@ -1,5 +1,5 @@
 name: Promise-Q - build module
-run-name: ${{ github.actor }} testing deferable
+run-name: ${{ github.actor }} testing promise-Q
 on: [push]
 jobs:
     Setup:
