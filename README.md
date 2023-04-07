@@ -83,24 +83,26 @@ There is an example to be found in `/src/example/array-fn.js` which demonstrates
 
 The promise-Q object is created with the constructor and it takes 3 arguments
 
-`() => Promise<T>[]`
+### APIs
+
+####`() => Promise<T>[]`
     array of functions returning Promise such as http call, REST call etc.
 
-`Number`
+####`Number`
     delay between individual calls, e.g. if spawning 50, 100 or 1000 calls at the same time is not desired.
     If not provided, the default value is 100 mls.
 
-`Number`
+####`Number`
     Queue or buffer size. This is the maximum number of currently pending Promises. Once this number is reached, the execution of the next function is paused until the at least one of the pending Promises is settled.
     If not provided the default value is undefined which means no limit on queue size.
 
-`get PromiseQ.promises()`
+####`get PromiseQ.promises()`
     getter method to return the array of all promises
 
-`PromiseQ.start()`
+####`PromiseQ.start()`
     starts the execution.
 
-`PromiseQ.on(event, callback): unsubscribeFn`
+####`PromiseQ.on(event, callback): unsubscribeFn`
     hook to register event. Library currently supports two events.
     - start: when the PromiseQ.start is triggerd
     - done: when all Promises are either `pending` or `settled`
@@ -110,7 +112,7 @@ The promise-Q object is created with the constructor and it takes 3 arguments
     NOTE: if you require to run callback when all promises are settled you can just run
     `Promise.allSettled(pq.promises)`
 
-`PromiseQ.off(event, callback)`
+####`PromiseQ.off(event, callback)`
     unregister callback from an event. The same reference needs to be used.
 
 ### Running the tests
