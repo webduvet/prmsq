@@ -9,8 +9,6 @@ export class PromiseQ {
 
 	_pending = []
 
-	_batch = true
-
 	// default interval 100mls
 	_int=100
 
@@ -21,8 +19,6 @@ export class PromiseQ {
 		// not used now
 		data: [],
 		empty: [],
-		timeout: [],
-		interrupt: [],
 		start: [],
 		// once the there no more promises to schedule
 		// it does not mean that all promises are settled
@@ -35,10 +31,20 @@ export class PromiseQ {
 		_qFull: false, // internal
 	}
 
-	constructor(fns, interval, pendingLimit, batch=true) {
+	/**
+	 * @desc
+	 * takes an array of functions that return promises
+	 * which can be later scheduled
+	 * if the pendingLimit is reach the next promise is scheduled
+	 * right after at least one promise is settled
+	 *
+	 * @param {Array} fns - array of functions that return promises
+	 * @param {Number} interval between individual function calls in mls
+	 * @param {Number} pendingLimit - max number of pending promises
+	 */
+	constructor(fns, interval, pendingLimit) {
 		this._int = interval || this._int;
 		this._pendingLimit = pendingLimit;
-		this._batch = batch;
 		this._index = 0;
 		this._q = [];
 
@@ -73,6 +79,16 @@ export class PromiseQ {
 		})
 	}
 
+	/**
+	 * @desc
+	 * subscribe to events ['start', 'done']
+	 * start is emitted when the first promise is scheduled
+	 * done is emitted when all promises are scheduled or settled
+	 *
+	 * @param {String} event
+	 * @param {Function} cb - callback in the form () => any
+	 * @return {Function} unsubscribe function
+	 */
 	on(event, cb) {
 		if (Object.keys(this._subscribers).indexOf(event) < 0) {
 			throw Error(`event "${event}" is not supported.`)
@@ -87,6 +103,13 @@ export class PromiseQ {
 		};
 	}
 
+	/**
+	 * @desc
+	 * unsubscribe from events
+	 *
+	 * @param {String} event
+	 * @param {Function} cb - previously subscribed callback
+	 */
 	off(event, cb) {
 		if (Object.keys(this._subscribers).indexOf(event) < 0) {
 			throw Error(`event "${event}" is not supported.`)
