@@ -1,4 +1,4 @@
-name: Publish Promise-Q Package to npmjs
+name: Publish PRMSQ Package to npmjs
 on:
   release:
     types: [published]
