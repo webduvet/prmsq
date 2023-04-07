@@ -1,4 +1,4 @@
-# promise-q
+# PrmsQ
 controlled queue for promise resolution
 
 
@@ -6,7 +6,7 @@ controlled queue for promise resolution
 [![npm version](https://badge.fury.io/js/angular2-expandable-list.svg)](https://badge.fury.io/js/angular2-expandable-list)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-# Promise-Q
+# PrmsQ - Promise Queue
 
 > Wrapper for promises to allow to defer the execution.
 
@@ -67,13 +67,13 @@ $ npm install promise-q
 Inside your project:
 ```js
 import {
-    PromiseQ
+    PrmsQ
 } from 'promise-q'
 
 const promiseArray = new Array(...new Array(50)).map(fnReturningPromise);
 
 // 0.1s between calls and max 5 pending promises
-const pq = new PromiseQ(promiseArray, 100, 5)
+const pq = new PrmsQ(promiseArray, 100, 5)
 
 pq.start();
 ```
@@ -96,23 +96,23 @@ If not provided, the default value is 100 mls.</dd></dl>
 <dl><dd>Queue or buffer size. This is the maximum number of currently pending Promises. Once this number is reached, the execution of the next function is paused until the at least one of the pending Promises is settled.</dd>
 <dd>If not provided the default value is undefined which means no limit on queue size.</dd></dl>
 
-`get PromiseQ.promises()`
+`get PrmsQ.promises()`
 <dl><dd>getter method to return the array of all promises</dd></dl>
 
-`PromiseQ.start()`
+`PrmsQ.start()`
 <dl><dd>starts the execution.</dd></dl>
 
-`PromiseQ.on(event, callback): unsubscribeFn`
+`PrmsQ.on(event, callback): unsubscribeFn`
 <dl>
 <dd>hook to register event. Library currently supports two events.</dd>
-<dd>- start: when the PromiseQ.start is triggerd</dd>
+<dd>- start: when the PrmsQ.start is triggerd</dd>
 <dd>- done: when all Promises are either `pending` or `settled`</dd>
 <dd>returns convenient *unsubscribe* function</dd>
 
 <dl><dd> NOTE: if you require to run callback when all promises are settled you can just run `Promise.allSettled(pq.promises)`</dd></dl>
 </dl>
 
-`PromiseQ.off(event, callback)`
+`PrmsQ.off(event, callback)`
 <dl><dd>unregister callback from an event. The same reference needs to be used.</dd></dl>
 
 ### Running the tests

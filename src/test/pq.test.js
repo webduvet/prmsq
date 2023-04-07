@@ -1,5 +1,5 @@
 import {
-	PromiseQ,
+	PrmsQ,
 } from '../code/pq.js'
 
 import {
@@ -14,13 +14,13 @@ import {
 	spy
 } from 'sinon'
 
-describe('PromiseQ: ', function() {
+describe('PrmsQ: ', function() {
 	describe('get promises', function(done) {
 		it('should return an array of promises', function() {
 			// 50 fake calls returning promise each
 			const test = new Array(...new Array(10))
 				.map(() => new Promise((resolve, reject) => {}));
-			const pq = new PromiseQ(test, 100, 5)
+			const pq = new PrmsQ(test, 100, 5)
 			assert.isArray(pq.promises)
 			Promise.allSettled(pq.promises).then(done)
 		})
@@ -30,7 +30,7 @@ describe('PromiseQ: ', function() {
 		it('should start the promise settlement', function(done) {
 			const test = new Array(...new Array(10))
 				.map(() => fakeCall({ fold: 100 }));
-			const pq = new PromiseQ(test, 100, 5);
+			const pq = new PrmsQ(test, 100, 5);
 			let spied = spy();
 			pq.on('_qOpen', spied);
 			pq.start();
@@ -45,7 +45,7 @@ describe('PromiseQ: ', function() {
 			this.timeout(10000);
 			const test = new Array(...new Array(10))
 				.map(() => fakeCall({ fold: 100 }));
-			const pq = new PromiseQ(test, 100, 5)
+			const pq = new PrmsQ(test, 100, 5)
 			let spied = spy();
 			pq.on('start', spied)
 			pq.start()
@@ -60,7 +60,7 @@ describe('PromiseQ: ', function() {
 			this.timeout(10000);
 			const test = new Array(...new Array(10))
 				.map(() => fakeCall({ fold: 100 }));
-			const pq = new PromiseQ(test, 100, 5)
+			const pq = new PrmsQ(test, 100, 5)
 			let spiedOn = spy();
 			const unsubscribe = pq.on('_qOpen', spiedOn)
 			//pq.off('_qOpen', spy)
@@ -86,7 +86,7 @@ describe('PromiseQ: ', function() {
 			const test = new Array(...new Array(5))
 				.map(() => fakeCall(fakeConfig));
 			// 0.1s interval, 2 concurrent to make it jammed
-			const pq = new PromiseQ(test, 100, 2)
+			const pq = new PrmsQ(test, 100, 2)
 			let spiedOnClosed = spy();
 			pq.on('_qClosed', spiedOnClosed)
 			pq.start()
@@ -107,7 +107,7 @@ describe('PromiseQ: ', function() {
 			}
 			const test = new Array(...new Array(5))
 				.map(() => fakeCall(fakeConfig));
-			const pq = new PromiseQ(test, 50, 2)
+			const pq = new PrmsQ(test, 50, 2)
 			let spiedOnClosed = spy();
 			pq.on('_qClosed', spiedOnClosed)
 			let spiedOnOpen = spy();
@@ -130,7 +130,7 @@ describe('PromiseQ: ', function() {
 			}
 			const test = new Array(...new Array(5))
 				.map(() => fakeCall(fakeConfig));
-			const pq = new PromiseQ(test, 500)
+			const pq = new PrmsQ(test, 500)
 			let spiedOnClosed = spy();
 			pq.on('_qClosed', spiedOnClosed)
 			let spiedOnOpen = spy();

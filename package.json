@@ -24,9 +24,9 @@
 	"author": "Andrej Bartko",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/webduvet/promise-q/issues"
+		"url": "https://github.com/webduvet/prmsq/issues"
 	},
-	"homepage": "https://github.com/webduvet/promise-q#readme",
+	"homepage": "https://github.com/webduvet/prmsq#readme",
 	"devDependencies": {
 		"@babel/cli": "^7.20.7",
 		"@babel/core": "^7.21.0",

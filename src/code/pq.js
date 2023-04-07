@@ -3,7 +3,7 @@ import {
 } from 'deferable';
 
 //this is one burst
-export class PromiseQ {
+export class PrmsQ {
 
 	_pendingLimit = undefined
 
