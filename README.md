@@ -29,8 +29,7 @@ v8.16.0
   - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Usage](#usage)
-    - [Factory flavor](#factory-flavor)
-    - [Class Flavor](#class-flavor)
+    - [APIs](#apis)
     - [Running the tests](#running-the-tests)
     - [Building a distribution version](#building-a-distribution-version)
   - [Contributing](#contributing)
@@ -109,7 +108,7 @@ If not provided, the default value is 100 mls.</dd></dl>
 <dd>- start: when the PromiseQ.start is triggerd</dd>
 <dd>- done: when all Promises are either `pending` or `settled`</dd>
 <dd>returns convenient *unsubscribe* function</dd>
-    
+
 <dl><dd> NOTE: if you require to run callback when all promises are settled you can just run `Promise.allSettled(pq.promises)`</dd></dl>
 </dl>
 
