@@ -11,21 +11,21 @@ console.log('**** PrmsQ ****')
 // test array of 50 fake calls returning promise
 const test = new Array(...new Array(50)).map(() => fakeCall());
 
-const rl = new PrmsQ(test, 100, 5)
+const pq = new PrmsQ(test, 100, 5)
 
 
-rl.on('_qClosed', function() {
+pq.on('_qClosed', function() {
 	console.log('_qClosed')
-	console.log(rl._pending)
+	console.log(pq._pending)
 })
 
-rl.on('_qOpen', function() {
+pq.on('_qOpen', function() {
 	console.log('_qOpen')
 })
 
-Promise.allSettled(rl.promises)
+Promise.allSettled(pq.promises)
 	.then(values => {
 		console.log(values)
 	})
 
-rl.start()
+pq.start()

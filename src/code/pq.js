@@ -2,23 +2,31 @@ import {
 	Defer
 } from 'deferable';
 
-//this is one burst
+/**
+ * @desc
+ * PrmsQ is a queue of promises that can be scheduled
+ * with a given interval
+ * it can be used to limit the number of pending promises
+ */
 export class PrmsQ {
 
 	_pendingLimit = undefined
 
+	// indices of promises in pending state
 	_pending = []
 
 	// default interval 100mls
 	_int=100
 
 	// Q if pendingLimit is reached
+	// should be either empty or contianing one element (index)
 	_q = []
 
 	_subscribers = {
 		// not used now
 		data: [],
 		empty: [],
+		// triggerd when start is called
 		start: [],
 		// once the there no more promises to schedule
 		// it does not mean that all promises are settled
@@ -64,8 +72,6 @@ export class PrmsQ {
 		if (!this._pendingLimit) {
 			return false;
 		}
-		//console.log(`Q size: ${this._pending.length}`)
-		//console.log(`Q full: ${this._pendingLimit === this._pending.length}`)
 		return this._pending.length === this._pendingLimit;
 	}
 
@@ -125,13 +131,12 @@ export class PrmsQ {
 
 	_addToQueue(opIndex) {
 		// verify if _q is empty and available
-		// it shoud be
+		// it shoud be 0
 		if (this._q.length > 0) {
 			throw Error('Q is expected to be empty')
 			return;
 		}
 		this._q.push(opIndex);
-		//console.log(this._q)
 		this._processQ();
 	}
 
@@ -144,7 +149,6 @@ export class PrmsQ {
 
 	_removePending(opIndex) {
 		const pos = this._pending.indexOf(opIndex);
-		//console.log(`removing opIndex ${opIndex} at at ${pos}`)
 		const pendingMax = this._pendingLimit === this._pending.length;
 		if (pos > -1) {
 			this._pending = [
@@ -167,7 +171,6 @@ export class PrmsQ {
 	}
 
 	_scheduleNext() {
-		//this._addToQueue(this._index);
 		if (this._q.length > 0) {
 			throw Error('Q is expected to be empty')
 			return;
@@ -178,8 +181,6 @@ export class PrmsQ {
 		}
 
 		this._q.push(this._index);
-
-		//console.log(this._q)
 
 		this._index += 1;
 
@@ -193,8 +194,6 @@ export class PrmsQ {
 			this._scheduleNext();
 			return;
 		}
-
-		//console.log('operation Index:', operationIndex)
 
 		// open drawer with _deferred refered by index
 		const d = this._deferred[operationIndex];

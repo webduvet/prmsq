@@ -39,6 +39,6 @@
 		"sinon": "^15.0.1"
 	},
 	"dependencies": {
-		"deferable": "^0.0.7"
+		"deferable": "^0.0.8"
 	}
 }
