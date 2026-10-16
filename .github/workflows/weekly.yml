@@ -1,0 +1,37 @@
+name: Weekly health check
+# Catches rot early: newest Node, newest allowed dependencies (ignoring the
+# lockfile), the newest published `deferable`, and an advisory audit.
+on:
+  schedule:
+    - cron: '43 6 * * 1' # Mondays 06:43 UTC
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [lts/*, latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install --no-package-lock
+      - run: npm run test:types
+      - run: npm test
+      - run: npm audit --audit-level=moderate
+  integration-latest-deferable:
+    name: Integration with newest deferable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm ci
+      - name: Install newest published deferable (outside the declared range)
+        run: npm install --no-save deferable@latest && npm ls deferable
+      - run: npm test

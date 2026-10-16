@@ -1,157 +1,108 @@
-## 
-[![npm version](https://badge.fury.io/js/angular2-expandable-list.svg)](https://badge.fury.io/js/angular2-expandable-list)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+# prmsq - Promise Queue
 
-# PrmsQ - Promise Queue
+[![npm](https://img.shields.io/npm/v/prmsq.svg)](https://www.npmjs.com/package/prmsq)
+[![CI](https://github.com/webduvet/prmsq/actions/workflows/ci.yml/badge.svg)](https://github.com/webduvet/prmsq/actions/workflows/ci.yml)
+[![Weekly health check](https://github.com/webduvet/prmsq/actions/workflows/weekly.yml/badge.svg)](https://github.com/webduvet/prmsq/actions/workflows/weekly.yml)
+[![types](https://img.shields.io/npm/types/prmsq.svg)](https://www.npmjs.com/package/prmsq)
+[![install size](https://packagephobia.com/badge?p=prmsq)](https://packagephobia.com/result?p=prmsq)
+[![license](https://img.shields.io/npm/l/prmsq.svg)](LICENSE)
 
-> Wrapper for promises to allow to defer the execution.
+Throttle a batch of asynchronous calls: space them out with a **call interval**
+and cap how many may be **pending at once**. Built on
+[deferable](https://github.com/webduvet/deferable).
 
-## Prerequisites
+```
+fns: [ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ]  --interval 100ms, max 3 pending-->  promises: [ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ]
+```
 
-None. It only requires Promise capable version javascript interpreter.
-e.g. Node version(8 and higher)
+- You get all the promises back **immediately**, in the order of your functions
+- Nothing runs until `start()`
+- Failures never block the queue
+- Typed (TypeScript definitions included), ESM, one small dependency
+
+## Install
 
 ```sh
-$ npm -v && node -v
-6.4.1
-v8.16.0
+npm install prmsq
 ```
 
-## Table of contents
-
-- [Project Name](#deferable)
-  - [Prerequisites](#prerequisites)
-  - [Table of contents](#table-of-contents)
-  - [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [APIs](#apis)
-    - [Running the tests](#running-the-tests)
-    - [Building a distribution version](#building-a-distribution-version)
-  - [Contributing](#contributing)
-  - [Credits](#credits)
-  - [Built With](#built-with)
-  - [Versioning](#versioning)
-  - [Authors](#authors)
-  - [License](#license)
-
-## Getting Started
-
-clone the repository
-```bash
-git clone git@github.com:webduvet/promise-q.git
-```
-and from inside run the usual.
-```sh
-$ npm run test
-$ npm run build
-```
-
-## Installation
-
-**BEFORE YOU INSTALL:** please read the [prerequisites](#prerequisites)
-
-It is standard npm package:
-
-```sh
-$ cd npm-project
-$ npm install promise-q
-```
+Requires Node.js 20.19+ (or a modern bundler/browser).
 
 ## Usage
 
-Inside your project:
 ```js
-import {
-    PrmsQ
-} from 'promise-q'
+import { PrmsQ } from 'prmsq';
 
-const promiseArray = new Array(...new Array(50)).map(fnReturningPromise);
+const urls = [/* ...50 urls... */];
+const fns = urls.map((url) => () => fetch(url));
 
-// 0.1s between calls and max 5 pending promises
-const pq = new PrmsQ(promiseArray, 100, 5)
+// at most one request per 100ms, never more than 5 in flight
+const pq = new PrmsQ(fns, 100, 5);
+
+pq.on('done', () => console.log('every request has been started'));
 
 pq.start();
+
+const results = await Promise.allSettled(pq.promises);
 ```
 
-There is an example to be found in `/src/example/array-fn.js` which demonstrates throttling 50 asynchronous calls.
+Run the full demo with `npm run example` (see [`examples/throttle.js`](examples/throttle.js)).
 
-The promise-Q object is created with the constructor and it takes 3 arguments
+## API
 
-### APIs
-`() => Promise<T>[]`
-<dl>
-  <dd>array of functions returning Promise such as http call, REST call etc.</dd>
-</dl>
+### `new PrmsQ(fns, interval?, pendingLimit?)`
 
-`Number`
-<dl><dd>delay between individual calls, e.g. if spawning 50, 100 or 1000 calls at the same time is not desired.
-If not provided, the default value is 100 mls.</dd></dl>
+| Argument | Description |
+| --- | --- |
+| `fns` | Array of functions, each starting an operation and returning a promise (or value). |
+| `interval` | Minimum delay in ms between starting two calls. Default `100`; `0` disables the delay. |
+| `pendingLimit` | Max number of pending promises. Once reached, the next call waits until one settles. Default: unlimited. |
 
-`Number`
-<dl><dd>Queue or buffer size. This is the maximum number of currently pending Promises. Once this number is reached, the execution of the next function is paused until the at least one of the pending Promises is settled.</dd>
-<dd>If not provided the default value is undefined which means no limit on queue size.</dd></dl>
+Invalid arguments throw `TypeError` / `RangeError`.
 
-`get PrmsQ.promises()`
-<dl><dd>getter method to return the array of all promises</dd></dl>
+### `pq.promises`
 
-`PrmsQ.start()`
-<dl><dd>starts the execution.</dd></dl>
+One promise per function, same order as `fns`. They reject if the function
+throws or rejects - attach handlers or use `Promise.allSettled`, otherwise Node
+reports unhandled rejections.
 
-`PrmsQ.on(event, callback): unsubscribeFn`
-<dl>
-<dd>hook to register event. Library currently supports two events.</dd>
-<dd>- start: when the PrmsQ.start is triggerd</dd>
-<dd>- done: when all Promises are either `pending` or `settled`</dd>
-<dd>returns convenient *unsubscribe* function</dd>
+### `pq.start()`
 
-<dl><dd> NOTE: if you require to run callback when all promises are settled you can just run `Promise.allSettled(pq.promises)`</dd></dl>
-</dl>
+Starts scheduling.
 
-`PrmsQ.off(event, callback)`
-<dl><dd>unregister callback from an event. The same reference needs to be used.</dd></dl>
+### `pq.on(event, callback)` / `pq.off(event, callback)`
 
-### Running the tests
+| Event | Fires |
+| --- | --- |
+| `start` | when `start()` is called |
+| `done` | once, when every function has been **started** (not necessarily settled - use `Promise.allSettled(pq.promises)` for that) |
+
+`on` returns an unsubscribe function. `off` needs the same callback reference.
+Unknown events throw.
+
+### TypeScript
+
+```ts
+const pq = new PrmsQ([() => fetch('/a').then((r) => r.json())], 100, 2);
+pq.promises; // Promise<any>[]
+```
+
+## Development
 
 ```sh
-$ npm test
+npm ci
+npm test            # node:test
+npm run test:types
+npm run coverage
+npm run example
 ```
 
-### Building a distribution version
+CI runs on Node 20, 22 and 24. A [weekly workflow](.github/workflows/weekly.yml)
+re-tests on the newest Node and dependencies, audits them, and checks the
+integration against the newest published `deferable`.
 
-```sh
-$ npm run build
-```
-
-This task will create a distribution version of the project
-inside your local `dist/` folder
-
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-1.  Fork it!
-2.  Create your feature branch: `git checkout -b my-new-feature`
-3.  Add your changes: `git add .`
-4.  Commit your changes: `git commit -am 'Add some feature'`
-5.  Push to the branch: `git push origin my-new-feature`
-6.  Submit a pull request :sunglasses:
-
-## Credits
-
-TODO: Write credits
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
-
-## Authors
-
-* **Andrej Bartko** - *Initial work* - [AndrejBartko](https://github.com/webduvet)
-
-See also the list of [contributors](https://github.com/webduvet/deferable/contributors) who participated in this project.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [CHANGELOG](CHANGELOG.md).
 
 ## License
 
-[MIT License](https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt) © 2012-2022 Scott Chacon and others
+[MIT](LICENSE) © Andrej Bartko
