@@ -1,6 +1,4 @@
-import {
-	Defer
-} from 'deferable';
+import { Defer } from 'deferable';
 
 /**
  * @desc
@@ -36,7 +34,6 @@ export class PrmsQ {
 		// or at the end of interval
 		_qOpen: [], //internal
 		_qClosed: [], // internal
-		_qFull: false, // internal
 	}
 
 	/**
@@ -51,25 +48,39 @@ export class PrmsQ {
 	 * @param {Number} pendingLimit - max number of pending promises
 	 */
 	constructor(fns, interval, pendingLimit) {
-		this._int = interval || this._int;
+		if (!Array.isArray(fns) || fns.some(fn => typeof fn !== 'function')) {
+			throw new TypeError('PrmsQ expects an array of functions returning promises')
+		}
+		if (interval !== undefined && !(Number.isFinite(interval) && interval >= 0)) {
+			throw new RangeError('interval must be a non-negative number')
+		}
+		if (pendingLimit !== undefined && pendingLimit !== Infinity
+			&& !(Number.isInteger(pendingLimit) && pendingLimit >= 1)) {
+			throw new RangeError('pendingLimit must be a positive integer')
+		}
+		this._int = interval ?? this._int;
 		this._pendingLimit = pendingLimit;
 		this._index = 0;
 		this._q = [];
 
-		this._deferred = fns.map(fn => Defer(fn));
+		// wrapping makes sync throws and plain return values behave like promises
+		this._deferred = fns.map(fn => Defer(async () => fn()));
 		this._promises = this._deferred.map(d => d.promise);
 
 		this.on('_qOpen', function() {
 			if (this._index < this._deferred.length) {
 				this._scheduleNext();
-			} else {
+			} else if (!this._doneEmitted) {
+				// can be reached more than once (end of interval and a settled
+				// promise), but subscribers must hear about it only once
+				this._doneEmitted = true;
 				this._emit('done')
 			}
 		}.bind(this))
 	}
 
 	_isQueueFull() {
-		if (!this._pendingLimit) {
+		if (!this._pendingLimit || this._pendingLimit === Infinity) {
 			return false;
 		}
 		return this._pending.length === this._pendingLimit;

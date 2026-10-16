@@ -1,16 +1,32 @@
 {
 	"name": "prmsq",
 	"version": "0.0.2",
-	"description": "queue for controlled promise resolution",
+	"description": "Promise queue: throttle promise-returning functions with a call interval and a pending limit.",
 	"type": "module",
-	"main": "dist/pq.js",
-	"types": "types/module.d.ts",
+	"main": "./src/index.js",
+	"types": "./src/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.d.ts",
+			"default": "./src/index.js"
+		},
+		"./package.json": "./package.json"
+	},
 	"files": [
-		"dist"
+		"src/index.js",
+		"src/index.d.ts"
 	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=20.19"
+	},
 	"scripts": {
-		"test": "npm run build && mocha --require @babel/register ./src/test/**/*.test.js",
-		"build": "rm -rf ./dist && babel src/code -d dist --source-maps && cp -r src/types ./dist"
+		"test": "node --test",
+		"test:types": "tsc -p tsconfig.json",
+		"coverage": "node --test --experimental-test-coverage test/queue.test.js",
+		"check": "npm run test:types && npm test",
+		"example": "node examples/throttle.js",
+		"prepublishOnly": "npm run check"
 	},
 	"repository": {
 		"type": "git",
@@ -18,8 +34,11 @@
 	},
 	"keywords": [
 		"promise",
-		"rate",
-		"queue"
+		"queue",
+		"rate-limit",
+		"throttle",
+		"concurrency",
+		"typescript"
 	],
 	"author": "Andrej Bartko",
 	"license": "MIT",
@@ -27,18 +46,14 @@
 		"url": "https://github.com/webduvet/prmsq/issues"
 	},
 	"homepage": "https://github.com/webduvet/prmsq#readme",
-	"devDependencies": {
-		"@babel/cli": "^7.20.7",
-		"@babel/core": "^7.21.0",
-		"@babel/plugin-transform-runtime": "^7.21.0",
-		"@babel/preset-env": "^7.20.2",
-		"@babel/register": "^7.21.0",
-		"chai": "^4.3.7",
-		"mocha": "^10.2.0",
-		"chai-spies": "^1.0.0",
-		"sinon": "^15.0.1"
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
 	},
 	"dependencies": {
 		"deferable": "^0.0.8"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.0"
 	}
 }
