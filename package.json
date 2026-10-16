@@ -54,6 +54,6 @@
 		"deferable": "^0.0.8"
 	},
 	"devDependencies": {
-		"typescript": "^5.9.0"
+		"typescript": "^7.0.2"
 	}
 }
