@@ -8,5 +8,9 @@ Issues and pull requests are welcome.
 4. `npm run check` (types + tests) must pass.
 5. Open a pull request; describe the behaviour change.
 
-Releases: bump the version, update `CHANGELOG.md`, publish a GitHub release -
-the `Publish to npm` workflow publishes with provenance.
+Releases: bump the version and update `CHANGELOG.md`, merge, then either publish
+a GitHub release or run the `Publish to npm` workflow manually from the Actions
+tab (a manual run also creates the GitHub release). The workflow *stages* the
+version on npm via trusted publishing, with provenance. A maintainer then
+approves it on npmjs.com (package -> Staged Packages) or with
+`npm stage list` / `npm stage approve <stage-id>`; approval requires 2FA.

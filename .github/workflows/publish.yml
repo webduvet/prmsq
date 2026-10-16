@@ -1,10 +1,17 @@
 name: Publish to npm
+# Runs when a GitHub release is published, or manually from the Actions tab
+# ("Run workflow"). A manual run also creates the matching GitHub release.
+#
+# The version is *staged*, not published: a maintainer must approve it on
+# npmjs.com (package -> Staged Packages) or with `npm stage approve <id>`,
+# both of which require 2FA. Only then does it become installable.
 on:
   release:
     types: [published]
+  workflow_dispatch:
 permissions:
-  contents: read
-  id-token: write # npm provenance
+  contents: write # create the GitHub release on manual runs
+  id-token: write # npm trusted publishing + provenance
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -17,6 +24,21 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm publish --provenance --access public
+      - name: Read version
+        id: pkg
+        run: echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+      - name: Fail if this version is already on npm
+        run: |
+          if npm view "$(node -p 'require("./package.json").name')@${{ steps.pkg.outputs.version }}" version 2>/dev/null | grep -q .; then
+            echo "::error::Version ${{ steps.pkg.outputs.version }} is already published - bump package.json first"
+            exit 1
+          fi
+      # Authenticates with npm trusted publishing (OIDC): package Settings ->
+      # Trusted publishing -> GitHub Actions, workflow `publish.yml`.
+      - name: Stage release on npm (approve it on npmjs.com afterwards)
+        run: npm stage publish --provenance --access public --loglevel verbose
+      - name: Create GitHub release
+        if: github.event_name == 'workflow_dispatch'
+        run: gh release create "v${{ steps.pkg.outputs.version }}" --target "$GITHUB_SHA" --title "v${{ steps.pkg.outputs.version }}" --notes "See [CHANGELOG.md](CHANGELOG.md)."
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.token }}

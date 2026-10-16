@@ -1,6 +1,6 @@
 {
 	"name": "prmsq",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"description": "Promise queue: throttle promise-returning functions with a call interval and a pending limit.",
 	"type": "module",
 	"main": "./src/index.js",
@@ -51,7 +51,7 @@
 		"provenance": true
 	},
 	"dependencies": {
-		"deferable": "^0.0.8"
+		"deferable": "^1.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^7.0.2"
