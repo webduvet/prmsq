@@ -1,11 +1,14 @@
 # Changelog
 
-## Unreleased (proposed 0.1.0)
+## 0.1.0 - 2026-10-16
 
 ### Breaking
 - Native ESM source, no Babel build; entry is `src/index.js` (was `dist/pq.js`).
   Minimum Node.js is 20.19.
 - Package name in the README is now correct: `prmsq` (docs said `promise-q`).
+
+### Changed
+- Depends on `deferable` ^1.0.0 (ESM, zero dependencies).
 
 ### Fixed
 - `done` could fire more than once; it now fires exactly once.
